@@ -36,6 +36,11 @@ if release -le precise; then
      sed -i '/#.*#.*#.*#/s/ #......$//;/--release/d' /etc/crouton/xiwi.conf
 fi
 
+# Remove some unsupported options on old versions of i3
+if release -le precise; then
+     sed -i '/#.*#.*#.*#/s/ #......$//;/--release/d' /etc/crouton/xiwi.conf
+fi
+
 # Compile croutonfbserver
 compile fbserver '-lX11 -lXfixes -lXdamage -lXext -lXtst' \
         arch=,libx11-dev arch=,libxfixes-dev arch=,libxdamage-dev \

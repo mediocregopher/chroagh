@@ -102,7 +102,11 @@ fi
 
 # On Freon, we need crazy xorg hacks
 if [ -n "$freon" ]; then
+<<<<<<< HEAD
     compile freon '-ldl -ldrm -I/usr/include/libdrm' so arch=libdrm,libdrm-dev
+=======
+    compile freon '-ldl -ldrm -I/usr/include/libdrm' so libdrm-dev
+>>>>>>> crouton/master
 fi
 
 # Pin precise's version of mesa if necessary
@@ -203,9 +207,14 @@ if [ -z "$inteldriver" -a -n "$backport" ] && release -eq precise; then
         x11-xserver-utils xauth xinit xfonts-utils xkb-data xorg-docs-core \
         xterm x11-common xinput
 else
+<<<<<<< HEAD
     install xorg $installvideodrivers -- arch=,xserver-xorg-video-all$backport \
         $vmmouse
     install arch=ttf-dejavu
+=======
+    install xorg $installvideodrivers -- xserver-xorg-video-all$backport \
+        $vmmouse
+>>>>>>> crouton/master
 fi
 
 # Remove bad video drivers

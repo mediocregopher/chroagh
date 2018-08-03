@@ -58,6 +58,27 @@ fi
 # Make sure we always exit with echo on the tty.
 addtrap "stty echo 2>/dev/null"
 
+# Whitelists a directory for symlink and other hardening
+whitelist() {
+    # As of 67, symlinks and fifos are blocked in stateful partitions.
+    # Add exceptions for this chroot.
+    local sec='/sys/kernel/security' mounted=''
+    if mountpoint -q "$sec"; then
+        mounted=y
+    elif ! mount -n -t securityfs -o nodev,noexec,nosuid securityfs "$sec"; then
+        return
+    fi
+    policies="$sec/chromiumos/inode_security_policies"
+    if [ -d "$policies" ]; then
+        for policy in "$policies/allow_"*; do
+            printf "$CHROOT" > "$policy"
+        done
+    fi
+    if [ -z "$mounted" ]; then
+        umount "$sec"
+    fi
+}
+
 # Function to prompt the user for a passphrase. Sets $passphrase.
 promptNewPassphrase() {
     echo_tty -n "Choose an encryption passphrase for $NAME: "
@@ -128,6 +149,8 @@ for NAME in "$@"; do
         if [ -z "$ENCRYPT" ]; then
             mount --bind "$CHROOTSRC" "$CHROOT"
             mount -i -o "remount,$MOUNTOPTS" "$CHROOT"
+            mount --make-private "$CHROOT"
+            whitelist "$CHROOT"
             continue
         fi
 
@@ -259,6 +282,8 @@ $passphrase" | ecryptfs-rewrap-passphrase "$wrappedfnek" -
         if ! mount -i -t ecryptfs -o "$mnt" "$CHROOTSRC" "$CHROOT"; then
             error 1 "Failed to mount $NAME."
         fi
+
+        whitelist "$CHROOT"
     fi
 
     # Perform the move

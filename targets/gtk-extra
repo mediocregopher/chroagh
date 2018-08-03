@@ -3,12 +3,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 REQUIRES='x11'
-DESCRIPTION='GTK-based tools including gdebi, gksu, and a simple browser.'
+DESCRIPTION='GTK-based tools including gdebi and a simple browser.'
 . "${TARGETSDIR:="$PWD"}/common"
 
 ### Append to prepare.sh:
+<<<<<<< HEAD
 if [ "${DISTROAKA:-"$DISTRO"}" != 'arch' ]; then
     install_dummy network-manager network-manager-gnome
+    if release -lt buster -lt kali-rolling -lt artful; then
+      install gksu
+    fi
 fi
 install arch=,gdebi gksu arch=netsurf,netsurf-gtk
 

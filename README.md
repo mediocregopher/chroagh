@@ -114,7 +114,6 @@ to the rest of Chromium OS.
 
 ...but hey, you can run [TuxRacer](https://en.wikipedia.org/wiki/Tux_Racer)!
 
-
 ## Prerequisites
 
 You need a device running Chromium OS that has been switched to developer mode.
@@ -279,6 +278,7 @@ have to determine and download the bootstrap files every time.*
      ones) and then use them with any version of crouton via the `-T` parameter.
 
 *This is great for automating common tasks when creating chroots.*
+
 
 ### Help! I've created a monster that must be slain!
 

@@ -121,29 +121,6 @@ Initializing pacman keyring (move the mouse to generate entropy)..." 1>&2
     else
         # archlinuxarm-keyring has been installed as part of bootstrap
         pacman-key --populate archlinuxarm
-
-        if awk '
-            t == 3 && /^SigLevel[ \t]*=/ {
-                print "#" $0; next; # Replace all occurences
-            }
-            t == 2 && /^#[ \t]*LocalFileSigLevel[ \t]*=[ \t]*Optional[ \t]*$/ {
-                sub(/^\#/, ""); t=3
-            }
-            t == 1 &&
-          /^#[ \t]*SigLevel[ \t]*=[ \t]*Required[ \t]*DatabaseOptional[ \t]*$/ {
-                sub(/^\#/, ""); t=2
-            }
-            match($0, /^[ \t]*\[(.*)\][ \t]*$/, m) {
-                if (m[1] == "options") { t=1 }
-                else if (t != 3) { exit 1 }
-            }
-            1
-            END { if (t != 3) exit 1 }
-        ' /etc/pacman.conf > /etc/pacman.conf.new; then
-            mv -f /etc/pacman.conf.new /etc/pacman.conf
-        else
-            error 2 "Unable to activate Arch Linux ARM signature checking"
-        fi
     fi
 
     # Force overwritting packages files in the bootstrap, without any sort

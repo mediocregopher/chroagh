@@ -7,7 +7,6 @@ DESCRIPTION='GTK-based tools including gdebi and a simple browser.'
 . "${TARGETSDIR:="$PWD"}/common"
 
 ### Append to prepare.sh:
-<<<<<<< HEAD
 if [ "${DISTROAKA:-"$DISTRO"}" != 'arch' ]; then
     install_dummy network-manager network-manager-gnome
     if release -lt buster -lt kali-rolling -lt artful; then

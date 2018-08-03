@@ -35,7 +35,6 @@ if [ "$XMETHOD" = 'xorg' ] || grep -q xorg /etc/crouton/targets; then
 fi
 
 # Use croutonurlhandler as a fallback URL handler
-<<<<<<< HEAD
 if [ "${DISTROAKA:-"$DISTRO"}" = 'debian' ]; then
     handler='/usr/local/bin/croutonurlhandler'
     for link in x-www-browser gnome-www-browser www-browser; do

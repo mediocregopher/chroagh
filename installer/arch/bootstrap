@@ -38,7 +38,7 @@ FETCHDIRDB="$tmp/db"
 FETCHDIRPKG="$tmp/packages"
 BOOTSTRAPCHROOT="$tmp/$subdir"
 
-curlparams=""
+curlparams="-L"
 # Display progress bar only if we are outputing to a tty
 if [ -t 2 ]; then
     curlparams="$curlparams -#"

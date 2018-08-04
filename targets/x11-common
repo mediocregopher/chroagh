@@ -23,9 +23,6 @@ if [ -n "$offset" ]; then
         conv=notrunc,nocreat 2>/dev/null
 fi
 
-# Install utility for croutoncycle
-compile wmtools '-lX11' arch=,libx11-dev
-
 # Install utilities and links for powerd-poking daemon
 compile xi2event '-lX11 -lXi' arch=,libx11-dev arch=,libxi-dev
 install --minimal dbus xdg-utils

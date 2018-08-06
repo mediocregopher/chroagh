@@ -10,6 +10,11 @@
 # This code is loosely based on a script found on the Arch Linux Wiki:
 # https://wiki.archlinux.org/index.php/Install_from_Existing_Linux
 
+# This isn't the prettiest way to do this, but it's how the other bash scripts
+# in this project do it, and who am I to challenge tradition?
+BINDIR="`dirname "\`readlink -f -- "$0"\`"`"
+BINDIR="`dirname \"$BINDIR\"`"/host-bin
+
 REPOS='core community extra'
 
 if [ "$ARCH" = 'armv7h' ]; then
@@ -21,7 +26,13 @@ fi
 # to list them manually:
 # - bash provides sh
 # - gawk provides awk
-PACKAGES_BOOTSTRAP="systemd bash gawk grep pacman sed util-linux"
+PACKAGES_BOOTSTRAP="bash gawk grep pacman sed util-linux"
+
+# systemd is needed because it has systemd-sysusers, which pacman uses in order
+# to create system users during post-install hooks. systemd depends on iptables,
+# which then depends on libusbx. libusbx isn't a package, but is provided by
+# libusb, so we have to manually include that too.
+PACKAGES_BOOTSTRAP="$PACKAGES_BOOTSTRAP libusb systemd"
 
 # On Arch Linux ARM, manually add keyring to bootstrap image
 if [ "$ARCH" = 'armv7h' ]; then
@@ -146,7 +157,7 @@ while [ -n "$missing" ]; do
     # Some packages provide virtual packages (e.g. bash provides sh):
     # Add those to the installed list
     nprovides="`getdbfield "$repo" "$pkgver" "depends" "PROVIDES" \
-    | tr '\n' ' '`"
+    | sed -n 's/^\([^<>=]*\).*$/\1/p' | tr '\n' ' '`"
     
     bootstrappkg="$bootstrappkg $package"
     installed="$installed $nprovides $package "
@@ -170,3 +181,27 @@ sed -i 's/^[ \t]*Architecture[ \t].*/Architecture = '"$ARCH"'/' \
 
 echo "$bootstrappkg" > "$BOOTSTRAPCHROOT"/crouton-bootstrap-pkg
 
+# this happens in installer/main.sh, but only after bootstrap has run, and we
+# need it to exist for enter-chroot below to work
+mkdir -p "$BOOTSTRAPCHROOT/etc/crouton"
+
+# Theoretically this _could_ happen within prepare (and it used to), but the
+# enter-chroot call for prepare uses a -xx flag, which causes it to try and set
+# up dbus, which fails because at this point pacman hasn't properly run and
+# therefore hasn't created the dbus user. So we do this crap in here instead.
+sh -e $BINDIR/enter-chroot -x -c "$(dirname $BOOTSTRAPCHROOT)" \
+    -n "$(basename $BOOTSTRAPCHROOT)" \
+    /bin/sh -c "
+        pacman-key --init
+        if [ '${ARCH#arm}' = '$ARCH' ]; then
+            pacman-key --populate archlinux
+        else
+            # archlinuxarm-keyring has been installed as part of bootstrap
+            pacman-key --populate archlinuxarm
+        fi
+
+        # Force overwritting packages files in the bootstrap, without any sort
+        # of dependency checking: this makes sure package content are properly
+        # recorded
+        pacman -S --nodeps --asdeps --noconfirm --overwrite '*' $bootstrappkg
+"

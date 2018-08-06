@@ -103,31 +103,6 @@ list_uninstalled_dist() {
 # Run boostrap second stage if it hasn't already happened
 bootstrappkglist="/crouton-bootstrap-pkg"
 if [ -r "$bootstrappkglist" ]; then
-    # This is technically not necessary, as we are not fetching anything at this
-    # stage, but pacman complains if no mirror is set. We setup a dummy one,
-    # to make sure we really do not fetch anything (we need to install the
-    # exact same packages as during the bootstrap creation, to make sure we
-    # do not leave any cruft behind).
-    if [ -n "$MIRROR" -a "$MIRROR" != 'unspecified' ]; then
-        echo "Server = https://192.0.2.1/" > "/etc/pacman.d/mirrorlist"
-    fi
-
-    echo "\
-Initializing pacman keyring (move the mouse to generate entropy)..." 1>&2
-    pacman-key --init
-
-    if [ "${ARCH#arm}" = "$ARCH" ]; then
-        pacman-key --populate archlinux
-    else
-        # archlinuxarm-keyring has been installed as part of bootstrap
-        pacman-key --populate archlinuxarm
-    fi
-
-    # Force overwritting packages files in the bootstrap, without any sort
-    # of dependency checking: this makes sure package content are properly
-    # recorded
-    pacman -S --nodeps --nodeps --asdeps --noconfirm --force \
-        `cat "$bootstrappkglist"`
 
     # Restore the original pacman configuration
     if [ -f /etc/pacman.conf.pacorig ]; then

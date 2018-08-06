@@ -666,8 +666,8 @@ if [ "$NOLOGIN" != 1 ] && grep -q '^root:' "$passwd" 2>/dev/null; then
             rm -f "$pidfile"
         fi
         mkdir -p /var/run/dbus
-        dbususer="`id -un "$dbususer" 2>/dev/null || echo "messagebus"`"
-        dbusgrp="`id -gn "$dbususer" 2>/dev/null || echo "messagebus"`"
+        dbususer="`id -un "$dbususer" 2>/dev/null || echo "dbus"`"
+        dbusgrp="`id -gn "$dbususer" 2>/dev/null || echo "dbus"`"
         chown "$dbususer:$dbusgrp" /var/run/dbus
         exec dbus-daemon --system --fork' || ret=$?
     if [ "$ret" != 0 ]; then

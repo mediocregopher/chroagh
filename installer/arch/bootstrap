@@ -15,9 +15,12 @@
 BINDIR="`dirname "\`readlink -f -- "$0"\`"`"
 BINDIR="`dirname \"$BINDIR\"`"/host-bin
 
+# see comment in installer/arch/defaults for why this is needed
+pacarch=$(echo $ARCH | sed 's/arm64/aarch64/')
+
 REPOS='core community extra'
 
-if [ "$ARCH" = 'armv7h' ]; then
+if [ "${ARCH#arm}" != "$ARCH" ]; then
     REPOS="$REPOS alarm aur"
 fi
 
@@ -35,7 +38,7 @@ PACKAGES_BOOTSTRAP="bash gawk grep pacman sed util-linux"
 PACKAGES_BOOTSTRAP="$PACKAGES_BOOTSTRAP libusb systemd"
 
 # On Arch Linux ARM, manually add keyring to bootstrap image
-if [ "$ARCH" = 'armv7h' ]; then
+if [ "${ARCH#arm}" != "$ARCH" ]; then
     PACKAGES_BOOTSTRAP="$PACKAGES_BOOTSTRAP archlinuxarm-keyring"
 fi
 
@@ -76,7 +79,7 @@ echo "Fetching repository packages list..." 1>&2
 for repo in $REPOS; do
     echo "Fetching $repo..." 1>&2
     mirrorbase="`echo "$MIRROR" | sed -e "s/\\$repo/$repo/" \
-    -e "s/\\$arch/$ARCH/"`"
+    -e "s/\\$arch/$pacarch/"`"
     curlretry -o "$FETCHDIRDB/$repo.db" "$mirrorbase/$repo.db" 1>&2
     # Create package list in this format: $repo:package-version
     tar tf "$FETCHDIRDB/$repo.db" \
@@ -143,7 +146,7 @@ while [ -n "$missing" ]; do
     
     file="`getdbfield "$repo" "$pkgver" "desc" "FILENAME"`"
     mirrorbase="`echo "$MIRROR" | sed -e "s/\\$repo/$repo/" \
-    -e "s/\\$arch/$ARCH/"`"
+    -e "s/\\$arch/$pacarch/"`"
     curlretry -o "$FETCHDIRPKG/$file" "$mirrorbase/$file" 1>&2
     tar --warning=no-unknown-keyword -xf "$FETCHDIRPKG/$file" --overwrite \
     --exclude=".PKGINFO" --exclude=".MTREE" \
@@ -176,7 +179,7 @@ echo "arch" > "$BOOTSTRAPCHROOT/etc/hostname"
 # Make sure package architecture is set manually.
 # Using the default Auto here detects the chroot from uname -m, breaking i686
 # chroots on x86-64.
-sed -i 's/^[ \t]*Architecture[ \t].*/Architecture = '"$ARCH"'/' \
+sed -i 's/^[ \t]*Architecture[ \t].*/Architecture = '"$pacarch"'/' \
 "$BOOTSTRAPCHROOT/etc/pacman.conf"
 
 echo "$bootstrappkg" > "$BOOTSTRAPCHROOT"/crouton-bootstrap-pkg

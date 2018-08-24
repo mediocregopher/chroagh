@@ -10,11 +10,16 @@ if [ -z "$ARCH" ]; then
     ARCH="`uname -m`"
 fi
 
+# pacman uses the kernel's naming scheme of aarch64 for that architecture, but
+# in this project the cannonical way of determining if $ARCH is an arm-based one
+# is to look for the string "arm" in it, so it's more convenient to leave it as
+# arm64 and only do the translation in bootstrap where it matters
+
 case "$ARCH" in
 x86 | i?86) ARCH="i686";;
 x86_64 | amd64) ARCH="x86_64";;
+arm64 | aarch64) ARCH="arm64";;
 arm*) ARCH="armv7h";;
-aarch64) ARCH="armv7h";;
 *) error 2 "Invalid architecture '$ARCH'.";;
 esac
 
@@ -23,5 +28,6 @@ if [ -z "$MIRROR" ]; then
     i686 ) MIRROR="${CROUTON_MIRROR_arch:-https://mirror.archlinux32.org/\$arch/\$repo}";;
     x86_64 ) MIRROR="${CROUTON_MIRROR_arch:-https://mirrors.kernel.org/archlinux/\$repo/os/\$arch}";;
     armv7h ) MIRROR="${CROUTON_MIRROR_alarm:-http://mirror.archlinuxarm.org/armv7h/\$repo}";;
+    arm64 ) MIRROR="${CROUTON_MIRROR_alarm:-http://mirror.archlinuxarm.org/aarch64/\$repo}";;
     esac
 fi

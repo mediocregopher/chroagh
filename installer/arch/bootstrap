@@ -203,6 +203,10 @@ sh -e $BINDIR/enter-chroot -x -c "$(dirname $BOOTSTRAPCHROOT)" \
             pacman-key --populate archlinuxarm
         fi
 
+        # TODO: figure out less hacky way to add mirror
+        # https://github.com/mediocregopher/chroagh/issues/1
+        echo 'Server = $MIRROR' >> /etc/pacman.d/mirrorlist
+
         # Force overwritting packages files in the bootstrap, without any sort
         # of dependency checking: this makes sure package content are properly
         # recorded

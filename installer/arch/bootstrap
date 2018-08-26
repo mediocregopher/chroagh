@@ -203,6 +203,19 @@ sh -e $BINDIR/enter-chroot -x -c "$(dirname $BOOTSTRAPCHROOT)" \
             pacman-key --populate archlinuxarm
         fi
 
+        # This is modified from inside prepare, which does something similar.
+        # It's needed here too because pacman-mirrorlist.x86_64 comes with no
+        # servers uncommented, and so the pacman calls below fail, even though
+        # they don't actually need to hit the mirrors for anything. MIRROR gets
+        # set in defaults if it's not explicitly set by the user.
+        if [ -n '$MIRROR' -a '$MIRROR' != 'unspecified' ]; then
+            if [ ! -e /etc/pacman.d/mirrorlist.pacorig ]; then
+                cp -T /etc/pacman.d/mirrorlist /etc/pacman.d/mirrorlist.pacorig
+            fi
+
+            echo 'Server = $MIRROR' > /etc/pacman.d/mirrorlist
+        fi
+
         # Force overwritting packages files in the bootstrap, without any sort
         # of dependency checking: this makes sure package content are properly
         # recorded

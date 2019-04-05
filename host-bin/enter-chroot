@@ -352,7 +352,7 @@ bindmount /tmp /tmp exec
 bindmount /proc
 tmpfsmount /var/run 'noexec,nosuid,mode=0755,size=10%'
 tmpfsmount /var/run/lock 'noexec,nosuid,nodev,size=5120k'
-bindmount /var/run/dbus /var/host/dbus
+bindmount /var/run/dbus
 bindmount /var/run/shill /var/host/shill
 bindmount /var/lib/timezone /var/host/timezone
 for m in /lib/modules/*; do
@@ -646,35 +646,6 @@ ret=0
 
 # Launch the system dbus unless we are entering a basic shell.
 if [ "$NOLOGIN" != 1 ] && grep -q '^root:' "$passwd" 2>/dev/null; then
-    # Try to detect the dbus user by parsing its configuration file
-    # If it fails, or if the user does not exist, `id -un '$dbususer'`
-    # will fail, and we fallback on a default user name ("messagebus")
-    dbususer="`echo "cat /busconfig/user/text()" \
-        | xmllint --shell "$CHROOT/usr/share/dbus-1/system.conf" 2>/dev/null \
-        | grep '^[a-z][-a-z0-9_]*$' || true`"
-    chrootcmd "
-        if ! hash dbus-daemon 2>/dev/null; then
-            exit 0
-        fi
-        dbususer='$dbususer'"'
-        pidfile="/var/run/dbus/pid"
-        if [ -f "$pidfile" ]; then
-            if grep -q "^dbus-daemon" "/proc/`cat "$pidfile"`/cmdline" \
-                    2>/dev/null; then
-                exit 0
-            fi
-            rm -f "$pidfile"
-        fi
-        mkdir -p /var/run/dbus
-        dbususer="`id -un "$dbususer" 2>/dev/null || echo "messagebus"`"
-        dbusgrp="`id -gn "$dbususer" 2>/dev/null || echo "messagebus"`"
-        chown "$dbususer:$dbusgrp" /var/run/dbus
-        exec dbus-daemon --system --fork' || ret=$?
-    if [ "$ret" != 0 ]; then
-        echo "WARNING: starting chroot system dbus daemon failed with code $ret" 1>&2
-        ret=0
-    fi
-
     # Launch systemd-logind if available and not already running
     # Whitelisted for saucy and trusty
     systemd_dir="`fixabslinks '/run/systemd'`"

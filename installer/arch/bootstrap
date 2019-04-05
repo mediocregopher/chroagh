@@ -188,17 +188,6 @@ echo "$bootstrappkg" > "$BOOTSTRAPCHROOT"/crouton-bootstrap-pkg
 # need it to exist for enter-chroot below to work
 mkdir -p "$BOOTSTRAPCHROOT/etc/crouton"
 
-# TODO: remove this when the slow sudo issue is fixed:
-# https://github.com/dnschneid/crouton/issues/3823
-if [ "${ARCH#arm}" != "$ARCH" ]; then
-    libsystemdpkg=http://tardis.tiny-vps.com/aarm/repos/2018/07/01/$pacarch/core/libsystemd-238.133-4-aarch64.pkg.tar.xz
-    systemdpkg=http://tardis.tiny-vps.com/aarm/repos/2018/07/01/$pacarch/core/systemd-238.133-4-aarch64.pkg.tar.xz
-else
-    libsystemdpkg=https://archive.archlinux.org/packages/l/libsystemd/libsystemd-238.133-4-$pacarch.pkg.tar.xz
-    systemdpkg=https://archive.archlinux.org/packages/s/systemd/systemd-238.133-4-$pacarch.pkg.tar.xz
-fi
-
-
 # Theoretically this _could_ happen within prepare (and it used to), but the
 # enter-chroot call for prepare uses a -xx flag, which causes it to try and set
 # up dbus, which fails because at this point pacman hasn't properly run and
@@ -231,9 +220,4 @@ sh -e $BINDIR/enter-chroot -x -c "$(dirname $BOOTSTRAPCHROOT)" \
         # of dependency checking: this makes sure package content are properly
         # recorded
         pacman -S --nodeps --asdeps --noconfirm --overwrite '*' $bootstrappkg
-
-        # TODO: remove this when the slow sudo issue is fixed:
-        # https://github.com/dnschneid/crouton/issues/3823
-        pacman -U --noconfirm $libsystemdpkg $systemdpkg
-        echo -e '[options]\nIgnorePkg = systemd libsystemd' >> /etc/pacman.conf
 "
